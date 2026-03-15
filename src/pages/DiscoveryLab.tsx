@@ -5,7 +5,7 @@ import {
   FileText, Database, Cpu, Share2,
   Network, Layers, TrendingUp, GitBranch, Code,
   Lightbulb, Beaker, BarChart3, Gem, Link,
-  ArrowRight, RotateCcw, ExternalLink
+  ArrowRight, RotateCcw, ExternalLink, BookOpen, Lock
 } from "lucide-react";
 import ParticleField from "@/components/ParticleField";
 import BootSequence from "@/components/BootSequence";
@@ -15,7 +15,14 @@ import ReasoningAnimation from "@/components/ReasoningAnimation";
 import KnowledgeGraph from "@/components/KnowledgeGraph";
 import DiscoveryArchive from "@/components/DiscoveryArchive";
 import SystemStatus from "@/components/SystemStatus";
-import { getInsight, isBreakthroughCombo, type InsightData } from "@/data/insights";
+import GameHUD from "@/components/GameHUD";
+import CollectionGrid from "@/components/CollectionGrid";
+import ScorePopup from "@/components/ScorePopup";
+import {
+  getInsight, isBreakthroughCombo, calculateScore, getXpForLevel,
+  getRarityColor, getRarityLabel,
+  INITIAL_STATS, type PlayerStats, type InsightData,
+} from "@/data/insights";
 import cherazenLogo from "@/assets/cherazen-logo.jpg";
 
 type Phase = "boot" | "select" | "reasoning" | "insight";
@@ -69,9 +76,19 @@ const DiscoveryLab = () => {
   const [discoveries, setDiscoveries] = useState<Discovery[]>([]);
   const [currentInsight, setCurrentInsight] = useState<InsightData | null>(null);
   const [isBreakthrough, setIsBreakthrough] = useState(false);
+  const [showCollection, setShowCollection] = useState(false);
+  const [scorePopup, setScorePopup] = useState<{ points: number; insight: InsightData; isNew: boolean } | null>(null);
+  const [stats, setStats] = useState<PlayerStats>(INITIAL_STATS);
   const runCount = useRef(0);
 
   const canRun = domain && source && method && objective;
+
+  const isDomainLocked = (d: string) => !stats.unlockedDomains.includes(d);
+
+  const handleDomainSelect = (d: string) => {
+    if (isDomainLocked(d)) return;
+    setDomain(d);
+  };
 
   const handleRun = useCallback(() => {
     if (!canRun) return;
@@ -80,11 +97,55 @@ const DiscoveryLab = () => {
 
   const handleReasoningComplete = useCallback(() => {
     const breakthrough = isBreakthroughCombo(domain, source, method, objective);
-    const insight = getInsight(domain, runCount.current);
+    const insight = getInsight(domain, runCount.current, breakthrough);
     runCount.current++;
+
+    const isNew = !stats.collectedInsights.includes(insight.id);
+    const points = calculateScore(insight.rarity, stats.streak, breakthrough);
 
     setIsBreakthrough(breakthrough);
     setCurrentInsight(insight);
+
+    // Update stats
+    setStats((prev) => {
+      const newXp = prev.xp + points;
+      let newLevel = prev.level;
+      let xpRemaining = newXp;
+      let xpToNext = prev.xpToNext;
+
+      // Level up check
+      while (xpRemaining >= xpToNext) {
+        xpRemaining -= xpToNext;
+        newLevel++;
+        xpToNext = getXpForLevel(newLevel);
+      }
+
+      // Unlock domains at certain levels
+      const unlocked = [...prev.unlockedDomains];
+      if (newLevel >= 2 && !unlocked.includes("Medicine")) unlocked.push("Medicine");
+      if (newLevel >= 3 && !unlocked.includes("Climate Science")) unlocked.push("Climate Science");
+      if (newLevel >= 4 && !unlocked.includes("Aerospace")) unlocked.push("Aerospace");
+
+      const newCollected = isNew
+        ? [...prev.collectedInsights, insight.id]
+        : prev.collectedInsights;
+
+      return {
+        score: prev.score + points,
+        level: newLevel,
+        xp: xpRemaining,
+        xpToNext,
+        totalDiscoveries: prev.totalDiscoveries + 1,
+        streak: prev.streak + 1,
+        bestStreak: Math.max(prev.bestStreak, prev.streak + 1),
+        breakthroughs: prev.breakthroughs + (breakthrough ? 1 : 0),
+        unlockedDomains: unlocked,
+        collectedInsights: newCollected,
+      };
+    });
+
+    // Show score popup
+    setScorePopup({ points, insight, isNew });
 
     const newDiscovery: Discovery = {
       id: discoveries.length + 1,
@@ -95,12 +156,13 @@ const DiscoveryLab = () => {
     };
     setDiscoveries((prev) => [newDiscovery, ...prev]);
     setPhase("insight");
-  }, [domain, source, method, objective, discoveries.length]);
+  }, [domain, source, method, objective, discoveries.length, stats]);
 
   const handleReset = () => {
     setPhase("select");
     setCurrentInsight(null);
     setIsBreakthrough(false);
+    setScorePopup(null);
   };
 
   if (phase === "boot") {
@@ -111,9 +173,31 @@ const DiscoveryLab = () => {
     <div className="relative min-h-screen" style={{ background: "#0A0A0B" }}>
       <ParticleField />
 
+      {/* Score popup overlay */}
+      <AnimatePresence>
+        {scorePopup && (
+          <ScorePopup
+            points={scorePopup.points}
+            insight={scorePopup.insight}
+            isNew={scorePopup.isNew}
+            onDone={() => setScorePopup(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Collection modal */}
+      <AnimatePresence>
+        {showCollection && (
+          <CollectionGrid
+            collectedIds={stats.collectedInsights}
+            onClose={() => setShowCollection(false)}
+          />
+        )}
+      </AnimatePresence>
+
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
-        <header className="flex items-center justify-between px-6 py-4">
+        <header className="flex items-center justify-between px-4 md:px-6 py-3 flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <img src={cherazenLogo} alt="Cherazen" className="w-8 h-8 rounded-md" />
             <div>
@@ -121,7 +205,16 @@ const DiscoveryLab = () => {
               <p className="font-mono text-[9px] text-muted-foreground tracking-wider">CHERAZEN RESEARCH SYSTEMS · v1.0</p>
             </div>
           </div>
-          <SystemStatus />
+          <div className="flex items-center gap-3">
+            <GameHUD stats={stats} showCombo={scorePopup?.points} />
+            <button
+              onClick={() => setShowCollection(true)}
+              className="glass-panel rounded-lg px-3 py-2 font-mono text-[10px] tracking-wider uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+            >
+              <BookOpen size={12} />
+              Collection
+            </button>
+          </div>
         </header>
 
         {/* Main Content */}
@@ -137,7 +230,7 @@ const DiscoveryLab = () => {
                 className="w-full max-w-5xl"
               >
                 {/* Hero */}
-                <div className="text-center mb-10">
+                <div className="text-center mb-8">
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -159,34 +252,66 @@ const DiscoveryLab = () => {
                     transition={{ delay: 0.2 }}
                     className="text-sm text-muted-foreground mt-3 max-w-lg mx-auto"
                   >
-                    Select research parameters to explore how AI systems combine knowledge
-                    from scientific literature, datasets, and reasoning models to generate new hypotheses.
+                    Select research parameters to run AI explorations. Collect discoveries, build streaks, and unlock new domains.
                   </motion.p>
+
+                  {/* Level hint */}
+                  {stats.unlockedDomains.length < 6 && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 0.6 }}
+                      transition={{ delay: 0.4 }}
+                      className="font-mono text-[10px] text-lab-violet mt-2"
+                    >
+                      Level up to unlock more research domains →
+                    </motion.p>
+                  )}
                 </div>
 
                 {/* AI Core */}
-                <div className="flex justify-center mb-8">
-                  <AICore active={!!canRun} size={140} />
+                <div className="flex justify-center mb-6">
+                  <AICore active={!!canRun} size={120} />
                 </div>
 
                 {/* Selection Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
                   {/* Domain */}
                   <div>
                     <p className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground mb-3">
                       01 — Research Domain
                     </p>
                     <div className="space-y-2">
-                      {domains.map((d, i) => (
-                        <SelectionCard
-                          key={d.label}
-                          icon={d.icon}
-                          label={d.label}
-                          selected={domain === d.label}
-                          onClick={() => setDomain(d.label)}
-                          delay={i * 0.05}
-                        />
-                      ))}
+                      {domains.map((d, i) => {
+                        const locked = isDomainLocked(d.label);
+                        return locked ? (
+                          <motion.div
+                            key={d.label}
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 0.4, y: 0 }}
+                            transition={{ duration: 0.4, delay: i * 0.05 }}
+                            className="lab-card p-4 flex items-center gap-3 cursor-not-allowed"
+                          >
+                            <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(255,255,255,0.03)" }}>
+                              <Lock size={14} className="text-muted-foreground" />
+                            </div>
+                            <div>
+                              <span className="text-sm text-muted-foreground">{d.label}</span>
+                              <p className="font-mono text-[9px] text-muted-foreground">
+                                Lvl {d.label === "Medicine" ? 2 : d.label === "Climate Science" ? 3 : 4}
+                              </p>
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <SelectionCard
+                            key={d.label}
+                            icon={d.icon}
+                            label={d.label}
+                            selected={domain === d.label}
+                            onClick={() => handleDomainSelect(d.label)}
+                            delay={i * 0.05}
+                          />
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -274,6 +399,11 @@ const DiscoveryLab = () => {
                   </motion.button>
                 </div>
 
+                {/* System Status */}
+                <div className="flex justify-center mt-6">
+                  <SystemStatus />
+                </div>
+
                 {/* Discovery Archive */}
                 {discoveries.length > 0 && (
                   <div className="fixed right-4 top-24 z-20 hidden lg:block">
@@ -330,11 +460,8 @@ const DiscoveryLab = () => {
                       }}
                     >
                       <Gem size={14} />
-                      Breakthrough Pattern Detected
+                      Breakthrough Pattern Detected — 2× Score Bonus!
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      This combination suggests a promising research direction with high potential impact.
-                    </p>
                   </motion.div>
                 )}
 
@@ -344,12 +471,26 @@ const DiscoveryLab = () => {
                   style={{
                     boxShadow: isBreakthrough
                       ? "0 0 0 1px rgba(255,77,166,0.2), 0 0 60px rgba(255,77,166,0.1), 0 20px 40px rgba(0,0,0,0.5)"
-                      : "0 0 0 1px rgba(123,92,255,0.15), 0 20px 40px rgba(0,0,0,0.5)",
+                      : `0 0 0 1px ${getRarityColor(currentInsight.rarity)}25, 0 20px 40px rgba(0,0,0,0.5)`,
                   }}
                 >
-                  <p className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground mb-1">
-                    AI Generated Insight
-                  </p>
+                  {/* Rarity badge */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <span
+                      className="font-mono text-[9px] tracking-widest uppercase px-2 py-0.5 rounded-full"
+                      style={{
+                        background: `${getRarityColor(currentInsight.rarity)}15`,
+                        color: getRarityColor(currentInsight.rarity),
+                        border: `1px solid ${getRarityColor(currentInsight.rarity)}30`,
+                      }}
+                    >
+                      {getRarityLabel(currentInsight.rarity)} Discovery
+                    </span>
+                    <span className="font-mono text-[9px] text-muted-foreground">
+                      +{currentInsight.points} pts
+                    </span>
+                  </div>
+
                   <p className="font-mono text-[10px] text-lab-violet mb-4">
                     HYPOTHESIS_GEN_{String(discoveries.length).padStart(3, "0")}
                   </p>
@@ -395,6 +536,36 @@ const DiscoveryLab = () => {
 
                 {/* CTAs */}
                 <div className="flex flex-col sm:flex-row gap-3 mt-8 justify-center">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleReset}
+                    className="font-mono text-sm tracking-wider uppercase px-6 py-3 rounded-xl flex items-center justify-center gap-2"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(123,92,255,0.25), rgba(29,233,182,0.15))",
+                      boxShadow: "0 0 0 1px rgba(123,92,255,0.4), 0 0 30px rgba(123,92,255,0.15)",
+                      color: "#fff",
+                    }}
+                  >
+                    <RotateCcw size={14} />
+                    Run Another Exploration
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowCollection(true)}
+                    className="font-mono text-sm tracking-wider uppercase px-6 py-3 rounded-xl flex items-center justify-center gap-2"
+                    style={{
+                      background: "rgba(255,255,255,0.03)",
+                      boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
+                      color: "rgba(255,255,255,0.6)",
+                    }}
+                  >
+                    <BookOpen size={14} />
+                    View Collection ({stats.collectedInsights.length}/24)
+                  </motion.button>
+
                   <motion.a
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -403,28 +574,14 @@ const DiscoveryLab = () => {
                     rel="noopener noreferrer"
                     className="font-mono text-sm tracking-wider uppercase px-6 py-3 rounded-xl flex items-center justify-center gap-2"
                     style={{
-                      background: "linear-gradient(135deg, rgba(123,92,255,0.25), rgba(29,233,182,0.15))",
-                      boxShadow: "0 0 0 1px rgba(123,92,255,0.4), 0 0 30px rgba(123,92,255,0.15)",
-                      color: "#fff",
-                    }}
-                  >
-                    Explore ApeironAI
-                    <ExternalLink size={14} />
-                  </motion.a>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleReset}
-                    className="font-mono text-sm tracking-wider uppercase px-6 py-3 rounded-xl flex items-center justify-center gap-2"
-                    style={{
                       background: "rgba(255,255,255,0.03)",
                       boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
                       color: "rgba(255,255,255,0.6)",
                     }}
                   >
-                    <RotateCcw size={14} />
-                    Run Another Exploration
-                  </motion.button>
+                    Explore ApeironAI
+                    <ExternalLink size={14} />
+                  </motion.a>
                 </div>
 
                 {/* Mobile Archive */}
