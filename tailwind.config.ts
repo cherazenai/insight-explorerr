@@ -52,11 +52,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        lab: {
-          bg: "#0A0A0B",
-          surface: "#101114",
-          violet: "#7B5CFF",
-          teal: "#1DE9B6",
+        ap: {
+          void: "#05060a",
+          midnight: "#0d1326",
+          cyan: "#00ffd5",
+          violet: "#7a5cff",
+          blue: "#4cc9ff",
+          gold: "#ffd166",
+          purple: "#9f6bff",
           magenta: "#FF4DA6",
         },
         sidebar: {
@@ -96,6 +99,11 @@ export default {
           "0%": { top: "0%" },
           "100%": { top: "100%" },
         },
+        "energy-pulse": {
+          "0%": { transform: "scale(1)", opacity: "0.6" },
+          "50%": { transform: "scale(1.5)", opacity: "0" },
+          "100%": { transform: "scale(1)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -103,6 +111,7 @@ export default {
         "pulse-glow": "pulse-glow 3s ease-in-out infinite",
         "float": "float 6s ease-in-out infinite",
         "scan-line": "scan-line 3s linear infinite",
+        "energy-pulse": "energy-pulse 2s ease-out infinite",
       },
     },
   },
