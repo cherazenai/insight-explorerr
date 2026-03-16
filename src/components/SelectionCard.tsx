@@ -7,34 +7,37 @@ interface SelectionCardProps {
   selected: boolean;
   onClick: () => void;
   delay?: number;
+  accentColor?: string;
 }
 
-const SelectionCard = ({ icon: Icon, label, selected, onClick, delay = 0 }: SelectionCardProps) => {
+const SelectionCard = ({ icon: Icon, label, selected, onClick, delay = 0, accentColor }: SelectionCardProps) => {
+  const color = accentColor || (selected ? "#00ffd5" : undefined);
+
   return (
     <motion.button
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: [0.2, 0, 0, 1] }}
       onClick={onClick}
-      className={`lab-card p-4 text-left w-full flex items-center gap-3 cursor-pointer ${selected ? "selected" : ""}`}
+      className={`lab-card p-3 md:p-4 text-left w-full flex items-center gap-3 cursor-pointer ${selected ? "selected" : ""}`}
     >
       <div
-        className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+        className="w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center shrink-0"
         style={{
           background: selected
-            ? "rgba(123,92,255,0.2)"
-            : "rgba(255,255,255,0.05)",
-          boxShadow: selected ? "0 0 12px rgba(123,92,255,0.3)" : "none",
+            ? `${color || "#00ffd5"}15`
+            : "rgba(255,255,255,0.04)",
+          boxShadow: selected ? `0 0 12px ${color || "#00ffd5"}30` : "none",
         }}
       >
         <Icon
-          size={18}
-          style={{ color: selected ? "#7B5CFF" : "rgba(255,255,255,0.5)" }}
+          size={16}
+          style={{ color: selected ? (color || "#00ffd5") : "rgba(255,255,255,0.45)" }}
         />
       </div>
       <span
-        className="text-sm font-medium"
-        style={{ color: selected ? "#fff" : "rgba(255,255,255,0.6)" }}
+        className="text-xs md:text-sm font-medium"
+        style={{ color: selected ? "#fff" : "rgba(255,255,255,0.55)" }}
       >
         {label}
       </span>

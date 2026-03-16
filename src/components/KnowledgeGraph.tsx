@@ -24,6 +24,12 @@ const graphData: Record<string, string[]> = {
   "Medicine": ["Drug Targets", "Protein Folding", "Gene Expression", "Clinical Trials", "Biomarkers"],
   "Climate Science": ["Carbon Capture", "Ocean Currents", "Atmospheric Models", "Ice Core Data", "Climate Feedback"],
   "Aerospace": ["Material Stress", "Propulsion Systems", "Aerodynamics", "Orbital Mechanics", "Heat Shields"],
+  "Quantum Physics": ["Qubits", "Entanglement", "Error Correction", "Quantum Gates", "Decoherence"],
+  "Biotechnology": ["CRISPR", "Synthetic Biology", "Protein Engineering", "Microbiome", "Gene Therapy"],
+  "Artificial Intelligence": ["Attention Mechanisms", "Neural Architecture", "Causal Reasoning", "Transfer Learning", "Emergent Behavior"],
+  "Neuroscience": ["Neural Plasticity", "Consciousness", "Memory", "Brain-Computer Interface", "Synaptic Networks"],
+  "Astrophysics": ["Dark Matter", "Exoplanets", "Gravitational Waves", "Cosmic Microwave Background", "Black Holes"],
+  "Nanotechnology": ["Molecular Machines", "Quantum Dots", "Self-Assembly", "Drug Delivery", "Nanofabrication"],
 };
 
 const KnowledgeGraph = ({ domain, method }: KnowledgeGraphProps) => {
@@ -45,7 +51,7 @@ const KnowledgeGraph = ({ domain, method }: KnowledgeGraphProps) => {
 
     const concepts = graphData[domain] || graphData["Chemistry"];
     const allLabels = [domain, method, ...concepts];
-    const colors = ["#7B5CFF", "#1DE9B6", "#FF4DA6"];
+    const colors = ["#00ffd5", "#7a5cff", "#4cc9ff", "#9f6bff", "#ffd166"];
 
     const nodes: KGNode[] = allLabels.map((label, i) => {
       const angle = (i / allLabels.length) * Math.PI * 2;
@@ -74,12 +80,10 @@ const KnowledgeGraph = ({ domain, method }: KnowledgeGraphProps) => {
       for (const n of nodes) {
         n.x += (n.targetX - n.x) * 0.04;
         n.y += (n.targetY - n.y) * 0.04;
-        // Slow drift
-        n.targetX += Math.sin(time + parseInt(n.id.slice(1)) * 0.5) * 0.1;
-        n.targetY += Math.cos(time + parseInt(n.id.slice(1)) * 0.7) * 0.1;
+        n.targetX += Math.sin(time + parseInt(n.id.slice(1)) * 0.5) * 0.08;
+        n.targetY += Math.cos(time + parseInt(n.id.slice(1)) * 0.7) * 0.08;
       }
 
-      // Connections
       for (const n of nodes) {
         for (const ci of n.connections) {
           if (ci >= nodes.length) continue;
@@ -88,38 +92,34 @@ const KnowledgeGraph = ({ domain, method }: KnowledgeGraphProps) => {
           ctx.moveTo(n.x, n.y);
           ctx.lineTo(target.x, target.y);
           ctx.strokeStyle = n.color;
-          ctx.globalAlpha = 0.15 * progress;
-          ctx.lineWidth = 1;
+          ctx.globalAlpha = 0.12 * progress;
+          ctx.lineWidth = 0.8;
           ctx.stroke();
 
-          // Pulse along the line
           const pulsePos = (time * 0.5 + parseInt(n.id.slice(1)) * 0.3) % 1;
           const px = n.x + (target.x - n.x) * pulsePos;
           const py = n.y + (target.y - n.y) * pulsePos;
           ctx.beginPath();
-          ctx.arc(px, py, 2, 0, Math.PI * 2);
+          ctx.arc(px, py, 1.5, 0, Math.PI * 2);
           ctx.fillStyle = n.color;
-          ctx.globalAlpha = 0.5 * progress;
+          ctx.globalAlpha = 0.4 * progress;
           ctx.fill();
         }
       }
 
-      // Nodes
       for (const n of nodes) {
         ctx.globalAlpha = progress;
         ctx.beginPath();
-        ctx.arc(n.x, n.y, 4, 0, Math.PI * 2);
+        ctx.arc(n.x, n.y, 3.5, 0, Math.PI * 2);
         ctx.fillStyle = n.color;
         ctx.fill();
 
-        // Label
         ctx.font = "9px Inter, sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.6)";
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
         ctx.textAlign = "center";
         ctx.fillText(n.label, n.x, n.y + 14);
       }
       ctx.globalAlpha = 1;
-
       animId = requestAnimationFrame(draw);
     };
     draw();
@@ -155,11 +155,7 @@ const KnowledgeGraph = ({ domain, method }: KnowledgeGraphProps) => {
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           className="absolute glass-panel rounded-lg px-3 py-2 text-xs pointer-events-none"
-          style={{
-            left: "50%",
-            bottom: "100%",
-            transform: "translateX(-50%)",
-          }}
+          style={{ left: "50%", bottom: "100%", transform: "translateX(-50%)" }}
         >
           <span style={{ color: hoveredNode.color }}>{hoveredNode.label}</span>
           <p className="text-muted-foreground mt-0.5">Connected research concept</p>

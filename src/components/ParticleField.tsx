@@ -28,18 +28,18 @@ const ParticleField = () => {
     resize();
     window.addEventListener("resize", resize);
 
-    const colors = ["#7B5CFF", "#1DE9B6", "#FF4DA6", "#4a3aaa"];
+    const colors = ["#7a5cff", "#00ffd5", "#4cc9ff", "#9f6bff", "#ffd166"];
     const particles: Particle[] = [];
-    const count = Math.min(120, Math.floor((window.innerWidth * window.innerHeight) / 12000));
+    const count = Math.min(100, Math.floor((window.innerWidth * window.innerHeight) / 15000));
 
     for (let i = 0; i < count; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        size: Math.random() * 2 + 0.5,
-        opacity: Math.random() * 0.5 + 0.1,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        size: Math.random() * 1.8 + 0.4,
+        opacity: Math.random() * 0.4 + 0.08,
         color: colors[Math.floor(Math.random() * colors.length)],
       });
     }
@@ -66,17 +66,15 @@ const ParticleField = () => {
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = 0;
 
-        // Mouse repulsion
         const dx = p.x - mx;
         const dy = p.y - my;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < 150) {
           const force = (150 - dist) / 150;
-          p.vx += (dx / dist) * force * 0.02;
-          p.vy += (dy / dist) * force * 0.02;
+          p.vx += (dx / dist) * force * 0.015;
+          p.vy += (dy / dist) * force * 0.015;
         }
 
-        // Dampen
         p.vx *= 0.99;
         p.vy *= 0.99;
 
@@ -86,7 +84,6 @@ const ParticleField = () => {
         ctx.globalAlpha = p.opacity;
         ctx.fill();
 
-        // Draw connections
         for (let j = i + 1; j < particles.length; j++) {
           const p2 = particles[j];
           const d = Math.sqrt((p.x - p2.x) ** 2 + (p.y - p2.y) ** 2);
@@ -95,7 +92,7 @@ const ParticleField = () => {
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(p2.x, p2.y);
             ctx.strokeStyle = p.color;
-            ctx.globalAlpha = (1 - d / 120) * 0.15;
+            ctx.globalAlpha = (1 - d / 120) * 0.1;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
