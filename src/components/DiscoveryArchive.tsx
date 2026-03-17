@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface Discovery {
   id: number;
@@ -6,7 +6,6 @@ interface Discovery {
   description: string;
   domain: string;
   timestamp: string;
-  impact?: string;
   confidence?: number;
 }
 
@@ -18,54 +17,32 @@ const DiscoveryArchive = ({ discoveries }: DiscoveryArchiveProps) => {
   if (discoveries.length === 0) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.6, ease: [0.2, 0, 0, 1] }}
-      className="glass-panel rounded-xl p-4 w-full max-w-xs"
-    >
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-2 h-2 rounded-full bg-ap-cyan animate-pulse-glow" />
-        <span className="font-mono text-[9px] md:text-[10px] tracking-widest uppercase text-muted-foreground">
-          Discovery Archive
-        </span>
-      </div>
-      <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-        <AnimatePresence mode="popLayout">
-          {discoveries.map((d) => (
-            <motion.div
-              key={d.id}
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="p-2.5 rounded-lg"
-              style={{
-                background: "rgba(255,255,255,0.025)",
-                boxShadow: "0 0 0 1px rgba(255,255,255,0.03)",
-              }}
-            >
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="font-mono text-[9px] md:text-[10px] text-ap-violet">
-                  #{String(d.id).padStart(3, "0")}
-                </span>
-                <span className="font-mono text-[8px] md:text-[9px] text-muted-foreground">
-                  {d.timestamp}
-                </span>
+    <div className="w-full">
+      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+        Recent Discoveries
+      </h4>
+      <div className="space-y-2 max-h-[300px] overflow-y-auto">
+        {discoveries.slice(0, 10).map((d, i) => (
+          <motion.div
+            key={d.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="card-elevated rounded-xl p-3"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{d.title}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  {d.domain} · {d.confidence}% confidence
+                </p>
               </div>
-              <p className="text-[11px] md:text-xs font-medium mt-1 text-foreground/80">{d.title}</p>
-              <p className="text-[9px] md:text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{d.description}</p>
-              {d.confidence && (
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="font-mono text-[8px] text-ap-blue">{d.confidence}% conf.</span>
-                  {d.impact && <span className="font-mono text-[8px] text-ap-gold">{d.impact}</span>}
-                </div>
-              )}
-            </motion.div>
-          ))}
-        </AnimatePresence>
+              <span className="text-[10px] text-muted-foreground shrink-0">{d.timestamp}</span>
+            </div>
+          </motion.div>
+        ))}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

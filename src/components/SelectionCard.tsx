@@ -1,46 +1,59 @@
 import { motion } from "framer-motion";
-import { LucideIcon } from "lucide-react";
+import { Lock, type LucideIcon } from "lucide-react";
 
 interface SelectionCardProps {
   icon: LucideIcon;
   label: string;
+  description?: string;
   selected: boolean;
+  locked?: boolean;
+  unlockLevel?: number;
   onClick: () => void;
   delay?: number;
-  accentColor?: string;
 }
 
-const SelectionCard = ({ icon: Icon, label, selected, onClick, delay = 0, accentColor }: SelectionCardProps) => {
-  const color = accentColor || (selected ? "#00ffd5" : undefined);
+const SelectionCard = ({ icon: Icon, label, description, selected, locked, unlockLevel, onClick, delay = 0 }: SelectionCardProps) => {
+  if (locked) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 0.5, y: 0 }}
+        transition={{ duration: 0.3, delay }}
+        className="card-elevated p-3.5 flex items-center gap-3 cursor-not-allowed opacity-50"
+      >
+        <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+          <Lock size={15} className="text-muted-foreground" />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-muted-foreground">{label}</p>
+          <p className="text-[11px] text-muted-foreground">Unlocks at Level {unlockLevel}</p>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.button
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay, ease: [0.2, 0, 0, 1] }}
+      transition={{ duration: 0.3, delay }}
+      whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={`lab-card p-3 md:p-4 text-left w-full flex items-center gap-3 cursor-pointer ${selected ? "selected" : ""}`}
+      className={`w-full text-left p-3.5 flex items-center gap-3 transition-all duration-200 ${
+        selected ? "card-selected" : "card-elevated"
+      }`}
     >
-      <div
-        className="w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center shrink-0"
-        style={{
-          background: selected
-            ? `${color || "#00ffd5"}15`
-            : "rgba(255,255,255,0.04)",
-          boxShadow: selected ? `0 0 12px ${color || "#00ffd5"}30` : "none",
-        }}
-      >
-        <Icon
-          size={16}
-          style={{ color: selected ? (color || "#00ffd5") : "rgba(255,255,255,0.45)" }}
-        />
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+        selected ? "bg-primary" : "bg-secondary"
+      }`}>
+        <Icon size={17} className={selected ? "text-primary-foreground" : "text-muted-foreground"} />
       </div>
-      <span
-        className="text-xs md:text-sm font-medium"
-        style={{ color: selected ? "#fff" : "rgba(255,255,255,0.55)" }}
-      >
-        {label}
-      </span>
+      <div className="min-w-0">
+        <p className={`text-sm font-medium ${selected ? "text-foreground" : "text-foreground/80"}`}>{label}</p>
+        {description && (
+          <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{description}</p>
+        )}
+      </div>
     </motion.button>
   );
 };

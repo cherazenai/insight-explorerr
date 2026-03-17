@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { getRarityColor, getRarityLabel, getImpactColor, type InsightData } from "@/data/insights";
+import { getRarityLabel, type InsightData } from "@/data/insights";
 import { Sparkles } from "lucide-react";
 
 interface ScorePopupProps {
@@ -9,85 +9,47 @@ interface ScorePopupProps {
   onDone: () => void;
 }
 
+const rarityBg: Record<string, string> = {
+  mythic: "bg-emerald-50 text-emerald-700",
+  legendary: "bg-amber-50 text-amber-700",
+  epic: "bg-pink-50 text-pink-700",
+  rare: "bg-violet-50 text-violet-700",
+  common: "bg-sky-50 text-sky-700",
+};
+
 const ScorePopup = ({ points, insight, isNew, onDone }: ScorePopupProps) => {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.8, y: 30 }}
+      initial={{ opacity: 0, scale: 0.9, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      transition={{ duration: 0.5, ease: [0.2, 0, 0, 1] }}
-      onAnimationComplete={() => setTimeout(onDone, 2200)}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.4 }}
+      onAnimationComplete={() => setTimeout(onDone, 1800)}
       className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none"
     >
       <div className="text-center">
-        {/* Expanding ring effect */}
-        <motion.div
-          initial={{ scale: 0.5, opacity: 0.8 }}
-          animate={{ scale: 3, opacity: 0 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        >
-          <div
-            className="w-20 h-20 rounded-full"
-            style={{
-              border: `2px solid ${getRarityColor(insight.rarity)}`,
-              boxShadow: `0 0 30px ${getRarityColor(insight.rarity)}40`,
-            }}
-          />
-        </motion.div>
-
         {isNew && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.15 }}
             className="flex items-center justify-center gap-1.5 mb-2"
           >
-            <Sparkles size={14} style={{ color: getRarityColor(insight.rarity) }} />
-            <span className="font-mono text-xs tracking-widest uppercase" style={{ color: getRarityColor(insight.rarity) }}>
+            <Sparkles size={14} className="text-primary" />
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${rarityBg[insight.rarity] || rarityBg.common}`}>
               New {getRarityLabel(insight.rarity)} Discovery
             </span>
-            <Sparkles size={14} style={{ color: getRarityColor(insight.rarity) }} />
           </motion.div>
         )}
         <motion.div
           initial={{ scale: 0.5 }}
-          animate={{ scale: [0.5, 1.3, 1] }}
-          transition={{ duration: 0.6, times: [0, 0.6, 1] }}
-          className="font-mono text-4xl md:text-5xl font-bold"
-          style={{
-            background: `linear-gradient(135deg, ${getRarityColor(insight.rarity)}, #fff)`,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
+          animate={{ scale: [0.5, 1.2, 1] }}
+          transition={{ duration: 0.5, times: [0, 0.6, 1] }}
+          className="text-5xl font-bold text-primary"
         >
           +{points}
         </motion.div>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="font-mono text-[10px] text-muted-foreground mt-1"
-        >
-          RESEARCH POINTS
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-2 flex items-center justify-center gap-2"
-        >
-          <span className="font-mono text-[9px] px-2 py-0.5 rounded-full" style={{
-            background: `${getImpactColor(insight.impact)}15`,
-            color: getImpactColor(insight.impact),
-            border: `1px solid ${getImpactColor(insight.impact)}30`,
-          }}>
-            {insight.impact}
-          </span>
-          <span className="font-mono text-[9px] text-muted-foreground">
-            {insight.confidence}% confidence
-          </span>
-        </motion.div>
+        <p className="text-xs text-muted-foreground mt-1 font-medium">Research Points</p>
       </div>
     </motion.div>
   );

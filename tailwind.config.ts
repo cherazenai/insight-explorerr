@@ -14,8 +14,6 @@ export default {
     },
     extend: {
       fontFamily: {
-        serif: ["Newsreader", "serif"],
-        mono: ["Geist Mono", "monospace"],
         sans: ["Inter", "sans-serif"],
       },
       colors: {
@@ -52,15 +50,10 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        ap: {
-          void: "#05060a",
-          midnight: "#0d1326",
-          cyan: "#00ffd5",
-          violet: "#7a5cff",
-          blue: "#4cc9ff",
-          gold: "#ffd166",
-          purple: "#9f6bff",
-          magenta: "#FF4DA6",
+        gold: {
+          DEFAULT: "#F5C518",
+          light: "#FFD54F",
+          dark: "#D4A800",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -87,31 +80,10 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "pulse-glow": {
-          "0%, 100%": { opacity: "0.4" },
-          "50%": { opacity: "1" },
-        },
-        "float": {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-8px)" },
-        },
-        "scan-line": {
-          "0%": { top: "0%" },
-          "100%": { top: "100%" },
-        },
-        "energy-pulse": {
-          "0%": { transform: "scale(1)", opacity: "0.6" },
-          "50%": { transform: "scale(1.5)", opacity: "0" },
-          "100%": { transform: "scale(1)", opacity: "0" },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "pulse-glow": "pulse-glow 3s ease-in-out infinite",
-        "float": "float 6s ease-in-out infinite",
-        "scan-line": "scan-line 3s linear infinite",
-        "energy-pulse": "energy-pulse 2s ease-out infinite",
       },
     },
   },
