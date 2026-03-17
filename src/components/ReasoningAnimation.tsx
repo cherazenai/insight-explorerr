@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Database, Network, Brain, Lightbulb, Sparkles, Check } from "lucide-react";
 
-const stages = [
-  { label: "Collecting Data", color: "#4cc9ff" },
-  { label: "Knowledge Graph", color: "#7a5cff" },
-  { label: "Reasoning Engine", color: "#9f6bff" },
-  { label: "Hypothesis Gen", color: "#00ffd5" },
-  { label: "Classification", color: "#ffd166" },
+const steps = [
+  { label: "Collecting Data", icon: Database },
+  { label: "Analyzing Knowledge Graph", icon: Network },
+  { label: "Running Reasoning Engine", icon: Brain },
+  { label: "Generating Hypothesis", icon: Lightbulb },
+  { label: "Classifying Discovery", icon: Sparkles },
 ];
 
 interface ReasoningAnimationProps {
@@ -14,82 +15,78 @@ interface ReasoningAnimationProps {
 }
 
 const ReasoningAnimation = ({ onComplete }: ReasoningAnimationProps) => {
-  const [activeStage, setActiveStage] = useState(-1);
+  const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
-    stages.forEach((_, i) => {
-      setTimeout(() => setActiveStage(i), 700 * (i + 1));
-    });
-    setTimeout(onComplete, 700 * (stages.length + 1));
+    const interval = setInterval(() => {
+      setCurrentStep((s) => {
+        if (s >= steps.length - 1) {
+          clearInterval(interval);
+          setTimeout(onComplete, 600);
+          return s;
+        }
+        return s + 1;
+      });
+    }, 700);
+    return () => clearInterval(interval);
   }, [onComplete]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="flex flex-col items-center gap-3 py-8"
-    >
-      <p className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase mb-4">
-        AI Reasoning Pipeline Active
-      </p>
-      <div className="flex flex-col sm:flex-row items-center gap-2">
-        {stages.map((stage, i) => (
-          <div key={i} className="flex items-center gap-2">
+    <div className="w-full max-w-md mx-auto py-8">
+      <h3 className="text-lg font-semibold text-foreground text-center mb-6">
+        AI Processing...
+      </h3>
+      <div className="space-y-3">
+        {steps.map((step, i) => {
+          const Icon = step.icon;
+          const isActive = i === currentStep;
+          const isDone = i < currentStep;
+
+          return (
             <motion.div
-              animate={{
-                scale: activeStage >= i ? 1 : 0.8,
-                opacity: activeStage >= i ? 1 : 0.3,
-              }}
-              transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
-              className="flex flex-col items-center gap-1"
+              key={step.label}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
+                isActive ? "bg-primary/10 border border-primary/30" :
+                isDone ? "bg-secondary" : "bg-secondary/50"
+              }`}
             >
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center font-mono text-xs"
-                style={{
-                  background: activeStage >= i ? `${stage.color}18` : "rgba(255,255,255,0.04)",
-                  boxShadow: activeStage >= i ? `0 0 20px ${stage.color}35` : "none",
-                  color: activeStage >= i ? stage.color : "rgba(255,255,255,0.25)",
-                  border: `1px solid ${activeStage >= i ? stage.color + "35" : "rgba(255,255,255,0.06)"}`,
-                }}
-              >
-                {i + 1}
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                isDone ? "bg-primary" : isActive ? "bg-primary/20" : "bg-secondary"
+              }`}>
+                {isDone ? (
+                  <Check size={15} className="text-primary-foreground" />
+                ) : (
+                  <Icon size={15} className={isActive ? "text-primary" : "text-muted-foreground"} />
+                )}
               </div>
-              <span
-                className="text-[9px] md:text-[10px] font-mono whitespace-nowrap"
-                style={{ color: activeStage >= i ? stage.color : "rgba(255,255,255,0.25)" }}
-              >
-                {stage.label}
+              <span className={`text-sm font-medium ${
+                isActive ? "text-foreground" : isDone ? "text-foreground/70" : "text-muted-foreground"
+              }`}>
+                {step.label}
               </span>
+              {isActive && (
+                <motion.div
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ repeat: Infinity, duration: 1 }}
+                  className="ml-auto w-2 h-2 rounded-full bg-primary"
+                />
+              )}
             </motion.div>
-            {i < stages.length - 1 && (
-              <motion.div
-                animate={{
-                  scaleX: activeStage > i ? 1 : 0,
-                  opacity: activeStage > i ? 0.5 : 0.08,
-                }}
-                transition={{ duration: 0.3 }}
-                className="hidden sm:block w-6 md:w-8 h-px origin-left"
-                style={{
-                  background: `linear-gradient(90deg, ${stage.color}, ${stages[i + 1].color})`,
-                }}
-              />
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
-      {/* Energy stream */}
-      <div className="mt-6 relative h-1 w-48 md:w-64 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.04)" }}>
+      <div className="mt-6 h-1 rounded-full bg-secondary">
         <motion.div
-          animate={{ x: ["-100%", "200%"] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-y-0 w-1/3"
-          style={{
-            background: "linear-gradient(90deg, transparent, #00ffd5, transparent)",
-          }}
+          className="h-full rounded-full bg-primary"
+          initial={{ width: "0%" }}
+          animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+          transition={{ duration: 0.5 }}
         />
       </div>
-    </motion.div>
+    </div>
   );
 };
 

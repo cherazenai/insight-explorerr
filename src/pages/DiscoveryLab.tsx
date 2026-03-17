@@ -7,14 +7,11 @@ import {
   Lightbulb, Beaker, BarChart3, Gem, Link,
   ArrowRight, RotateCcw, ExternalLink, BookOpen, Lock,
   Microscope, Dna, Sparkles, Globe, Orbit, CircuitBoard,
-  User, Mail
+  User, Mail, X, Settings
 } from "lucide-react";
-import ParticleField from "@/components/ParticleField";
 import BootSequence from "@/components/BootSequence";
-import AICore from "@/components/AICore";
 import SelectionCard from "@/components/SelectionCard";
 import ReasoningAnimation from "@/components/ReasoningAnimation";
-import KnowledgeGraph from "@/components/KnowledgeGraph";
 import DiscoveryArchive from "@/components/DiscoveryArchive";
 import SystemStatus from "@/components/SystemStatus";
 import GameHUD from "@/components/GameHUD";
@@ -23,32 +20,32 @@ import ScorePopup from "@/components/ScorePopup";
 import GlobalFeed from "@/components/GlobalFeed";
 import {
   getInsight, isBreakthroughCombo, calculateScore, getXpForLevel, getRank,
-  getRarityColor, getRarityLabel, getImpactColor,
+  getRarityLabel,
   INITIAL_STATS, type PlayerStats, type InsightData,
 } from "@/data/insights";
 
 type Phase = "boot" | "select" | "reasoning" | "insight";
 
 const domains = [
-  { label: "Materials Science", icon: Atom },
-  { label: "Energy Technology", icon: Zap },
-  { label: "Chemistry", icon: FlaskConical },
-  { label: "Medicine", icon: HeartPulse },
-  { label: "Climate Science", icon: CloudSun },
-  { label: "Aerospace", icon: Rocket },
-  { label: "Quantum Physics", icon: CircuitBoard },
-  { label: "Biotechnology", icon: Dna },
-  { label: "Artificial Intelligence", icon: Brain },
-  { label: "Neuroscience", icon: Microscope },
-  { label: "Astrophysics", icon: Orbit },
-  { label: "Nanotechnology", icon: Boxes },
+  { label: "Materials Science", icon: Atom, desc: "Discover novel materials and compounds" },
+  { label: "Energy Technology", icon: Zap, desc: "Explore clean energy innovations" },
+  { label: "Chemistry", icon: FlaskConical, desc: "Analyze chemical reactions and synthesis" },
+  { label: "Medicine", icon: HeartPulse, desc: "Investigate drug targets and biomarkers" },
+  { label: "Climate Science", icon: CloudSun, desc: "Model climate systems and solutions" },
+  { label: "Aerospace", icon: Rocket, desc: "Optimize propulsion and materials" },
+  { label: "Quantum Physics", icon: CircuitBoard, desc: "Explore quantum computing frontiers" },
+  { label: "Biotechnology", icon: Dna, desc: "Engineer biological systems" },
+  { label: "Artificial Intelligence", icon: Brain, desc: "Discover emergent AI patterns" },
+  { label: "Neuroscience", icon: Microscope, desc: "Map brain and cognition" },
+  { label: "Astrophysics", icon: Orbit, desc: "Probe cosmic phenomena" },
+  { label: "Nanotechnology", icon: Boxes, desc: "Design molecular machines" },
 ];
 
 const sources = [
-  { label: "Scientific Papers", icon: FileText },
-  { label: "Experimental Datasets", icon: Database },
-  { label: "Simulation Data", icon: Cpu },
-  { label: "Knowledge Graph", icon: Share2 },
+  { label: "Scientific Papers", icon: FileText, desc: "Analyze published research literature" },
+  { label: "Experimental Datasets", icon: Database, desc: "Process laboratory measurements" },
+  { label: "Simulation Data", icon: Cpu, desc: "Use computational model outputs" },
+  { label: "Knowledge Graph", icon: Share2, desc: "Traverse connected scientific knowledge" },
 ];
 
 const methods = [
@@ -79,6 +76,22 @@ interface Discovery {
   confidence?: number;
 }
 
+const rarityBadge: Record<string, string> = {
+  mythic: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  legendary: "bg-amber-50 text-amber-700 border-amber-200",
+  epic: "bg-pink-50 text-pink-700 border-pink-200",
+  rare: "bg-violet-50 text-violet-700 border-violet-200",
+  common: "bg-sky-50 text-sky-700 border-sky-200",
+};
+
+const impactBadge: Record<string, string> = {
+  "Paradigm Shift": "bg-emerald-50 text-emerald-700",
+  "Breakthrough": "bg-amber-50 text-amber-700",
+  "High": "bg-violet-50 text-violet-700",
+  "Moderate": "bg-sky-50 text-sky-700",
+  "Low": "bg-gray-50 text-gray-600",
+};
+
 const DiscoveryLab = () => {
   const [phase, setPhase] = useState<Phase>("boot");
   const [domain, setDomain] = useState("");
@@ -94,33 +107,22 @@ const DiscoveryLab = () => {
   const [stats, setStats] = useState<PlayerStats>(INITIAL_STATS);
   const runCount = useRef(0);
 
-  // Energy regeneration
   useEffect(() => {
     const interval = setInterval(() => {
-      setStats((prev) => ({
-        ...prev,
-        energy: Math.min(prev.energy + 1, prev.maxEnergy),
-      }));
-    }, 30000); // 1 energy per 30s
+      setStats((prev) => ({ ...prev, energy: Math.min(prev.energy + 1, prev.maxEnergy) }));
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
   const canRun = domain && source && method && objective && stats.energy > 0;
-
   const isDomainLocked = (d: string) => !stats.unlockedDomains.includes(d);
-
   const getDomainUnlockLevel = (d: string): number => {
-    const unlockMap: Record<string, number> = {
+    const map: Record<string, number> = {
       "Medicine": 2, "Climate Science": 3, "Aerospace": 4,
       "Quantum Physics": 5, "Biotechnology": 6, "Artificial Intelligence": 7,
       "Neuroscience": 8, "Astrophysics": 9, "Nanotechnology": 10,
     };
-    return unlockMap[d] || 1;
-  };
-
-  const handleDomainSelect = (d: string) => {
-    if (isDomainLocked(d)) return;
-    setDomain(d);
+    return map[d] || 1;
   };
 
   const handleRun = useCallback(() => {
@@ -162,9 +164,6 @@ const DiscoveryLab = () => {
         if (newLevel >= Number(lvl) && !unlocked.includes(dom)) unlocked.push(dom);
       }
 
-      const newCollected = isNew ? [...prev.collectedInsights, insight.id] : prev.collectedInsights;
-      const newMaxEnergy = 10 + Math.floor(newLevel / 2);
-
       return {
         score: prev.score + points,
         level: newLevel,
@@ -175,28 +174,28 @@ const DiscoveryLab = () => {
         bestStreak: Math.max(prev.bestStreak, prev.streak + 1),
         breakthroughs: prev.breakthroughs + (breakthrough ? 1 : 0),
         energy: prev.energy,
-        maxEnergy: newMaxEnergy,
+        maxEnergy: 10 + Math.floor(newLevel / 2),
         reputation: prev.reputation + Math.floor(points * 0.1),
         rank: getRank(newLevel),
         unlockedDomains: unlocked,
-        collectedInsights: newCollected,
+        collectedInsights: isNew ? [...prev.collectedInsights, insight.id] : prev.collectedInsights,
       };
     });
 
     setScorePopup({ points, insight, isNew });
 
-    const newDiscovery: Discovery = {
-      id: discoveries.length + 1,
+    setDiscoveries((prev) => [{
+      id: prev.length + 1,
       title: insight.title,
       description: insight.hypothesis.slice(0, 120) + "...",
       domain,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       impact: insight.impact,
       confidence: insight.confidence,
-    };
-    setDiscoveries((prev) => [newDiscovery, ...prev]);
+    }, ...prev]);
+
     setPhase("insight");
-  }, [domain, source, method, objective, discoveries.length, stats]);
+  }, [domain, source, method, objective, stats]);
 
   const handleReset = () => {
     setPhase("select");
@@ -209,30 +208,20 @@ const DiscoveryLab = () => {
     return <BootSequence onComplete={() => setPhase("select")} />;
   }
 
-  return (
-    <div className="relative min-h-screen" style={{ background: "#05060a" }}>
-      <ParticleField />
+  const selectedCount = [domain, source, method, objective].filter(Boolean).length;
 
-      {/* Score popup overlay */}
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Score popup */}
       <AnimatePresence>
         {scorePopup && (
-          <ScorePopup
-            points={scorePopup.points}
-            insight={scorePopup.insight}
-            isNew={scorePopup.isNew}
-            onDone={() => setScorePopup(null)}
-          />
+          <ScorePopup points={scorePopup.points} insight={scorePopup.insight} isNew={scorePopup.isNew} onDone={() => setScorePopup(null)} />
         )}
       </AnimatePresence>
 
       {/* Collection modal */}
       <AnimatePresence>
-        {showCollection && (
-          <CollectionGrid
-            collectedIds={stats.collectedInsights}
-            onClose={() => setShowCollection(false)}
-          />
-        )}
+        {showCollection && <CollectionGrid collectedIds={stats.collectedInsights} onClose={() => setShowCollection(false)} />}
       </AnimatePresence>
 
       {/* Profile modal */}
@@ -242,526 +231,342 @@ const DiscoveryLab = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: "rgba(5,6,10,0.85)", backdropFilter: "blur(12px)" }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/20 backdrop-blur-sm"
             onClick={() => setShowProfile(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, y: 20 }}
+              initial={{ scale: 0.95, y: 10 }}
               animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9 }}
-              className="glass-panel rounded-2xl p-6 w-full max-w-sm"
+              exit={{ scale: 0.95 }}
+              className="bg-background rounded-2xl border border-border shadow-xl p-6 w-full max-w-sm"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="font-serif text-xl font-semibold text-foreground mb-4">Scientist Profile</h3>
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-lg font-semibold text-foreground">Scientist Profile</h3>
+                <button onClick={() => setShowProfile(false)} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+                  <X size={16} className="text-muted-foreground" />
+                </button>
+              </div>
               <div className="space-y-3">
                 {[
-                  { label: "Research Rank", value: stats.rank, color: "#9f6bff" },
-                  { label: "Level", value: String(stats.level), color: "#00ffd5" },
-                  { label: "Total Discoveries", value: String(stats.totalDiscoveries), color: "#4cc9ff" },
-                  { label: "Breakthroughs", value: String(stats.breakthroughs), color: "#ffd166" },
-                  { label: "Best Streak", value: `×${stats.bestStreak}`, color: "#FF4DA6" },
-                  { label: "Reputation", value: stats.reputation.toLocaleString(), color: "#9f6bff" },
-                  { label: "Domains Mastered", value: `${stats.unlockedDomains.length}/12`, color: "#00ffd5" },
+                  { label: "Research Rank", value: stats.rank },
+                  { label: "Level", value: String(stats.level) },
+                  { label: "Total Discoveries", value: String(stats.totalDiscoveries) },
+                  { label: "Breakthroughs", value: String(stats.breakthroughs) },
+                  { label: "Best Streak", value: `×${stats.bestStreak}` },
+                  { label: "Reputation", value: stats.reputation.toLocaleString() },
+                  { label: "Domains Mastered", value: `${stats.unlockedDomains.length}/12` },
                 ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">{item.label}</span>
-                    <span className="font-mono text-xs" style={{ color: item.color }}>{item.value}</span>
+                  <div key={item.label} className="flex items-center justify-between py-1.5 border-b border-border last:border-0">
+                    <span className="text-sm text-muted-foreground">{item.label}</span>
+                    <span className="text-sm font-semibold text-foreground">{item.value}</span>
                   </div>
                 ))}
               </div>
-              <div className="mt-5 pt-4 border-t" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
-                <p className="font-mono text-[9px] text-muted-foreground tracking-wider uppercase mb-2">Contact</p>
-                <div className="space-y-1">
+              <div className="mt-5 pt-4 border-t border-border">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Contact</p>
+                <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <Mail size={10} className="text-muted-foreground" />
-                    <span className="text-[10px] text-muted-foreground">apeironaipro@gmail.com</span>
+                    <Mail size={12} className="text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">apeironaipro@gmail.com</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Mail size={10} className="text-muted-foreground" />
-                    <span className="text-[10px] text-muted-foreground">cherazen.ai@gmail.com</span>
+                    <Mail size={12} className="text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">cherazen.ai@gmail.com</span>
                   </div>
                 </div>
               </div>
-              <button
-                onClick={() => setShowProfile(false)}
-                className="mt-4 w-full font-mono text-xs text-muted-foreground hover:text-foreground transition-colors py-2 rounded-lg"
-                style={{ background: "rgba(255,255,255,0.03)" }}
-              >
-                Close
-              </button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-3 md:px-6 py-2.5 md:py-3 flex-wrap gap-2 md:gap-3">
-          <div className="flex items-center gap-2 md:gap-3">
-            {/* Infinity Logo */}
-            <div className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center">
-              <svg viewBox="0 0 36 20" className="w-8 h-5 infinity-pulse">
-                <path
-                  d="M10 10c0-4 3-8 8-8s8 4 8 8-3 8-8 8c-2 0-4-1-5.5-2.5C11 17 9 18 6.5 18 3 18 0 14 0 10s3-8 6.5-8C9 2 11 3 12.5 4.5 14 3 16 2 18 2"
-                  fill="none"
-                  stroke="#00ffd5"
-                  strokeWidth="1.2"
-                  strokeLinecap="round"
-                />
-              </svg>
+      {/* Header */}
+      <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-lg border-b border-border">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">A</span>
             </div>
             <div>
-              <h1 className="font-serif text-base md:text-lg font-semibold tracking-tight text-foreground">
-                ApeironAI <span className="hidden sm:inline">Research Lab</span>
-              </h1>
-              <p className="font-mono text-[7px] md:text-[9px] text-muted-foreground tracking-wider">
-                CHERAZEN RESEARCH SYSTEMS · v2.1
-              </p>
+              <h1 className="text-sm font-semibold text-foreground leading-tight">ApeironAI Research Lab</h1>
+              <p className="text-[10px] text-muted-foreground">Powered by Cherazen</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 md:gap-3">
-            <GameHUD stats={stats} showCombo={scorePopup?.points} />
-            <button
-              onClick={() => setShowCollection(true)}
-              className="glass-panel rounded-lg px-2 py-1.5 md:px-3 md:py-2 font-mono text-[9px] md:text-[10px] tracking-wider uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
-            >
-              <BookOpen size={11} />
-              <span className="hidden sm:inline">Archive</span>
+          <div className="flex items-center gap-1.5">
+            <GameHUD stats={stats} />
+            <button onClick={() => setShowCollection(true)} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-border transition-colors">
+              <BookOpen size={15} className="text-muted-foreground" />
             </button>
-            <button
-              onClick={() => setShowProfile(true)}
-              className="glass-panel rounded-lg px-2 py-1.5 md:px-3 md:py-2 font-mono text-[9px] md:text-[10px] tracking-wider uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
-            >
-              <User size={11} />
-              <span className="hidden sm:inline">Profile</span>
+            <button onClick={() => setShowProfile(true)} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-border transition-colors">
+              <User size={15} className="text-muted-foreground" />
             </button>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* Main Content */}
-        <main className="flex-1 flex flex-col items-center justify-start md:justify-center px-3 md:px-4 pb-8 pt-2 md:pt-0">
-          <AnimatePresence mode="wait">
-            {phase === "select" && (
-              <motion.div
-                key="select"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="w-full max-w-6xl"
-              >
-                {/* Hero */}
-                <div className="text-center mb-6 md:mb-8">
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="font-mono text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-ap-cyan mb-2 md:mb-3"
-                  >
-                    Exploring Infinite Intelligence Through Scientific Discovery
-                  </motion.p>
-                  <motion.h2
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="font-serif text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight italic text-foreground"
-                  >
-                    <span className="text-gradient-apeiron">Configure your research parameters</span>
-                  </motion.h2>
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-xs md:text-sm text-muted-foreground mt-2 md:mt-3 max-w-lg mx-auto"
-                  >
-                    Select research parameters, run AI explorations, collect discoveries, and unlock new domains.
-                  </motion.p>
+      {/* Main */}
+      <main className="max-w-6xl mx-auto px-4 py-6">
+        <AnimatePresence mode="wait">
+          {phase === "select" && (
+            <motion.div key="select" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {/* Welcome */}
+              <div className="mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+                  Welcome to ApeironAI Research Lab
+                </h2>
+                <p className="text-sm text-muted-foreground mt-2 max-w-lg">
+                  Run AI explorations across scientific knowledge to generate new hypotheses and discoveries.
+                </p>
+              </div>
 
-                  {stats.energy <= 3 && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 0.7 }}
-                      className="font-mono text-[9px] md:text-[10px] text-ap-gold mt-2"
-                    >
-                      ⚡ Energy: {stats.energy}/{stats.maxEnergy} — regenerates over time
-                    </motion.p>
-                  )}
-                </div>
-
-                {/* AI Core */}
-                <div className="flex justify-center mb-4 md:mb-6">
-                  <AICore active={!!canRun} size={typeof window !== 'undefined' && window.innerWidth < 768 ? 80 : 120} />
-                </div>
-
-                {/* Selection Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 md:mb-8">
-                  {/* Domain */}
-                  <div>
-                    <p className="font-mono text-[9px] md:text-[10px] tracking-widest uppercase text-muted-foreground mb-2 md:mb-3">
-                      01 — Research Domain
-                    </p>
-                    <div className="space-y-1.5 md:space-y-2 max-h-[280px] md:max-h-none overflow-y-auto pr-1">
-                      {domains.map((d, i) => {
-                        const locked = isDomainLocked(d.label);
-                        return locked ? (
-                          <motion.div
-                            key={d.label}
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 0.35, y: 0 }}
-                            transition={{ duration: 0.4, delay: i * 0.03 }}
-                            className="lab-card p-3 md:p-4 flex items-center gap-3 cursor-not-allowed"
-                          >
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(255,255,255,0.02)" }}>
-                              <Lock size={13} className="text-muted-foreground" />
-                            </div>
-                            <div>
-                              <span className="text-xs text-muted-foreground">{d.label}</span>
-                              <p className="font-mono text-[8px] md:text-[9px] text-muted-foreground">Lvl {getDomainUnlockLevel(d.label)}</p>
-                            </div>
-                          </motion.div>
-                        ) : (
-                          <SelectionCard
-                            key={d.label}
-                            icon={d.icon}
-                            label={d.label}
-                            selected={domain === d.label}
-                            onClick={() => handleDomainSelect(d.label)}
-                            delay={i * 0.03}
-                          />
-                        );
-                      })}
+              {/* Steps indicator */}
+              <div className="flex items-center gap-3 mb-6">
+                {[
+                  { n: 1, label: "Domain", done: !!domain },
+                  { n: 2, label: "Data Source", done: !!source },
+                  { n: 3, label: "Method", done: !!method },
+                  { n: 4, label: "Objective", done: !!objective },
+                ].map((step) => (
+                  <div key={step.n} className="flex items-center gap-1.5">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold ${
+                      step.done ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                    }`}>
+                      {step.n}
                     </div>
-                  </div>
-
-                  {/* Source */}
-                  <div>
-                    <p className="font-mono text-[9px] md:text-[10px] tracking-widest uppercase text-muted-foreground mb-2 md:mb-3">
-                      02 — Data Source
-                    </p>
-                    <div className="space-y-1.5 md:space-y-2">
-                      {sources.map((s, i) => (
-                        <SelectionCard
-                          key={s.label}
-                          icon={s.icon}
-                          label={s.label}
-                          selected={source === s.label}
-                          onClick={() => setSource(s.label)}
-                          delay={i * 0.03 + 0.1}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Method */}
-                  <div>
-                    <p className="font-mono text-[9px] md:text-[10px] tracking-widest uppercase text-muted-foreground mb-2 md:mb-3">
-                      03 — Reasoning Engine
-                    </p>
-                    <div className="space-y-1.5 md:space-y-2">
-                      {methods.map((m, i) => (
-                        <SelectionCard
-                          key={m.label}
-                          icon={m.icon}
-                          label={m.label}
-                          selected={method === m.label}
-                          onClick={() => setMethod(m.label)}
-                          delay={i * 0.03 + 0.2}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Objective */}
-                  <div>
-                    <p className="font-mono text-[9px] md:text-[10px] tracking-widest uppercase text-muted-foreground mb-2 md:mb-3">
-                      04 — Research Objective
-                    </p>
-                    <div className="space-y-1.5 md:space-y-2">
-                      {objectives.map((o, i) => (
-                        <SelectionCard
-                          key={o.label}
-                          icon={o.icon}
-                          label={o.label}
-                          selected={objective === o.label}
-                          onClick={() => setObjective(o.label)}
-                          delay={i * 0.03 + 0.3}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Run Button */}
-                <div className="flex justify-center">
-                  <motion.button
-                    whileHover={canRun ? { scale: 1.02 } : undefined}
-                    whileTap={canRun ? { scale: 0.98 } : undefined}
-                    onClick={handleRun}
-                    disabled={!canRun}
-                    className="font-mono text-xs md:text-sm tracking-wider uppercase px-6 md:px-8 py-3 rounded-xl transition-all duration-200"
-                    style={{
-                      background: canRun
-                        ? "linear-gradient(135deg, rgba(0,255,213,0.15), rgba(122,92,255,0.2))"
-                        : "rgba(255,255,255,0.02)",
-                      boxShadow: canRun
-                        ? "0 0 0 1px rgba(0,255,213,0.25), 0 0 30px rgba(0,255,213,0.1)"
-                        : "0 0 0 1px rgba(255,255,255,0.04)",
-                      color: canRun ? "#fff" : "rgba(255,255,255,0.2)",
-                      cursor: canRun ? "pointer" : "not-allowed",
-                    }}
-                  >
-                    <span className="flex items-center gap-2">
-                      Run AI Exploration
-                      <ArrowRight size={15} />
-                    </span>
-                  </motion.button>
-                </div>
-
-                {/* System Status + Feed */}
-                <div className="flex flex-col md:flex-row justify-center items-center gap-3 mt-5 md:mt-6">
-                  <SystemStatus />
-                  <GlobalFeed />
-                </div>
-
-                {/* Discovery Archive - desktop sidebar */}
-                {discoveries.length > 0 && (
-                  <div className="fixed right-4 top-20 z-20 hidden lg:block">
-                    <DiscoveryArchive discoveries={discoveries} />
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {phase === "reasoning" && (
-              <motion.div
-                key="reasoning"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col items-center w-full max-w-3xl"
-              >
-                <AICore active size={typeof window !== 'undefined' && window.innerWidth < 768 ? 140 : 200} />
-                <ReasoningAnimation onComplete={handleReasoningComplete} />
-                {domain && method && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1 }}
-                  >
-                    <KnowledgeGraph domain={domain} method={method} />
-                  </motion.div>
-                )}
-              </motion.div>
-            )}
-
-            {phase === "insight" && currentInsight && (
-              <motion.div
-                key="insight"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6, ease: [0.2, 0, 0, 1] }}
-                className="w-full max-w-2xl"
-              >
-                {/* Breakthrough banner */}
-                {isBreakthrough && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center mb-6"
-                  >
-                    <div
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-mono text-[10px] md:text-xs tracking-wider uppercase"
-                      style={{
-                        background: "rgba(0,255,213,0.1)",
-                        boxShadow: "0 0 30px rgba(0,255,213,0.15), 0 0 0 1px rgba(0,255,213,0.25)",
-                        color: "#00ffd5",
-                      }}
-                    >
-                      <Sparkles size={14} />
-                      Breakthrough Pattern Detected — 2× Score Bonus!
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Discovery Reveal */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="text-center mb-4"
-                >
-                  <p className="font-mono text-[10px] md:text-xs tracking-[0.3em] uppercase" style={{ color: getRarityColor(currentInsight.rarity) }}>
-                    Discovery Detected
-                  </p>
-                </motion.div>
-
-                {/* Insight Card */}
-                <div
-                  className="glass-panel rounded-2xl p-5 md:p-8"
-                  style={{
-                    boxShadow: isBreakthrough
-                      ? "0 0 0 1px rgba(0,255,213,0.2), 0 0 60px rgba(0,255,213,0.08), 0 20px 40px rgba(0,0,0,0.5)"
-                      : `0 0 0 1px ${getRarityColor(currentInsight.rarity)}20, 0 20px 40px rgba(0,0,0,0.5)`,
-                  }}
-                >
-                  {/* Rarity + Impact badges */}
-                  <div className="flex items-center gap-2 mb-3 flex-wrap">
-                    <span
-                      className="font-mono text-[8px] md:text-[9px] tracking-widest uppercase px-2 py-0.5 rounded-full"
-                      style={{
-                        background: `${getRarityColor(currentInsight.rarity)}12`,
-                        color: getRarityColor(currentInsight.rarity),
-                        border: `1px solid ${getRarityColor(currentInsight.rarity)}25`,
-                      }}
-                    >
-                      {getRarityLabel(currentInsight.rarity)} Discovery
-                    </span>
-                    <span
-                      className="font-mono text-[8px] md:text-[9px] tracking-widest uppercase px-2 py-0.5 rounded-full"
-                      style={{
-                        background: `${getImpactColor(currentInsight.impact)}12`,
-                        color: getImpactColor(currentInsight.impact),
-                        border: `1px solid ${getImpactColor(currentInsight.impact)}25`,
-                      }}
-                    >
-                      {currentInsight.impact}
-                    </span>
-                    <span className="font-mono text-[8px] md:text-[9px] text-muted-foreground">
-                      +{currentInsight.points} pts · {currentInsight.confidence}% confidence
+                    <span className={`text-xs font-medium hidden sm:inline ${step.done ? "text-foreground" : "text-muted-foreground"}`}>
+                      {step.label}
                     </span>
                   </div>
+                ))}
+                <div className="ml-auto text-xs text-muted-foreground">{selectedCount}/4 selected</div>
+              </div>
 
-                  <p className="font-mono text-[9px] md:text-[10px] text-ap-violet mb-3 md:mb-4">
-                    HYPOTHESIS_GEN_{String(discoveries.length).padStart(3, "0")}
-                  </p>
-
-                  <h3 className="font-serif text-xl md:text-2xl font-semibold tracking-tight text-foreground mb-3 md:mb-4 italic">
-                    {currentInsight.title}
+              {/* Selection Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                {/* Domain */}
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                    Step 1 — Research Domain
                   </h3>
-
-                  <div className="mb-3 md:mb-4">
-                    <p className="font-mono text-[9px] md:text-[10px] tracking-widest uppercase text-ap-cyan mb-2">
-                      Hypothesis Generated
-                    </p>
-                    <p className="text-xs md:text-sm text-foreground/80 leading-relaxed" style={{ maxWidth: "65ch" }}>
-                      {currentInsight.hypothesis}
-                    </p>
+                  <div className="space-y-2 max-h-[320px] md:max-h-none overflow-y-auto">
+                    {domains.map((d, i) => {
+                      const locked = isDomainLocked(d.label);
+                      return (
+                        <SelectionCard
+                          key={d.label}
+                          icon={d.icon}
+                          label={d.label}
+                          description={d.desc}
+                          selected={domain === d.label}
+                          locked={locked}
+                          unlockLevel={locked ? getDomainUnlockLevel(d.label) : undefined}
+                          onClick={() => !locked && setDomain(d.label)}
+                          delay={i * 0.02}
+                        />
+                      );
+                    })}
                   </div>
+                </div>
 
-                  <div className="mb-4 md:mb-6">
-                    <p className="font-mono text-[9px] md:text-[10px] tracking-widest uppercase text-ap-violet mb-2">
-                      Research Insight
-                    </p>
-                    <p className="text-xs md:text-sm text-foreground/70 leading-relaxed" style={{ maxWidth: "65ch" }}>
-                      {currentInsight.insight}
-                    </p>
-                  </div>
-
-                  {/* Confidence meter */}
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-mono text-[9px] text-muted-foreground">Confidence</span>
-                      <span className="font-mono text-[9px] text-ap-cyan">{currentInsight.confidence}%</span>
-                    </div>
-                    <div className="h-1 rounded-full w-full" style={{ background: "rgba(255,255,255,0.04)" }}>
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${currentInsight.confidence}%` }}
-                        transition={{ duration: 1, delay: 0.5 }}
-                        className="h-full rounded-full"
-                        style={{
-                          background: `linear-gradient(90deg, #7a5cff, ${currentInsight.confidence > 70 ? "#00ffd5" : currentInsight.confidence > 40 ? "#ffd166" : "#FF4DA6"})`,
-                        }}
+                {/* Source */}
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                    Step 2 — Data Source
+                  </h3>
+                  <div className="space-y-2">
+                    {sources.map((s, i) => (
+                      <SelectionCard
+                        key={s.label}
+                        icon={s.icon}
+                        label={s.label}
+                        description={s.desc}
+                        selected={source === s.label}
+                        onClick={() => setSource(s.label)}
+                        delay={i * 0.02 + 0.1}
                       />
-                    </div>
+                    ))}
                   </div>
-
-                  <p className="text-[9px] md:text-[10px] text-muted-foreground italic">
-                    Insight generated by ApeironAI research systems · Powered by Cherazen
-                  </p>
                 </div>
 
-                {/* Knowledge Graph */}
-                {domain && method && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="mt-4 md:mt-6"
-                  >
-                    <KnowledgeGraph domain={domain} method={method} />
-                  </motion.div>
-                )}
-
-                {/* CTAs */}
-                <div className="flex flex-col sm:flex-row gap-2.5 md:gap-3 mt-6 md:mt-8 justify-center">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleReset}
-                    className="font-mono text-xs md:text-sm tracking-wider uppercase px-5 md:px-6 py-3 rounded-xl flex items-center justify-center gap-2"
-                    style={{
-                      background: "linear-gradient(135deg, rgba(0,255,213,0.15), rgba(122,92,255,0.15))",
-                      boxShadow: "0 0 0 1px rgba(0,255,213,0.3), 0 0 30px rgba(0,255,213,0.1)",
-                      color: "#fff",
-                    }}
-                  >
-                    <RotateCcw size={13} />
-                    Run Another Exploration
-                  </motion.button>
-
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setShowCollection(true)}
-                    className="font-mono text-xs md:text-sm tracking-wider uppercase px-5 md:px-6 py-3 rounded-xl flex items-center justify-center gap-2"
-                    style={{
-                      background: "rgba(255,255,255,0.025)",
-                      boxShadow: "0 0 0 1px rgba(255,255,255,0.06)",
-                      color: "rgba(255,255,255,0.55)",
-                    }}
-                  >
-                    <BookOpen size={13} />
-                    Archive ({stats.collectedInsights.length}/48)
-                  </motion.button>
-
-                  <motion.a
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    href="https://ai.cherazen.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono text-xs md:text-sm tracking-wider uppercase px-5 md:px-6 py-3 rounded-xl flex items-center justify-center gap-2"
-                    style={{
-                      background: "rgba(255,255,255,0.025)",
-                      boxShadow: "0 0 0 1px rgba(255,255,255,0.06)",
-                      color: "rgba(255,255,255,0.55)",
-                    }}
-                  >
-                    Explore ApeironAI
-                    <ExternalLink size={13} />
-                  </motion.a>
+                {/* Method */}
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                    Step 3 — Reasoning Engine
+                  </h3>
+                  <div className="space-y-2">
+                    {methods.map((m, i) => (
+                      <SelectionCard
+                        key={m.label}
+                        icon={m.icon}
+                        label={m.label}
+                        selected={method === m.label}
+                        onClick={() => setMethod(m.label)}
+                        delay={i * 0.02 + 0.2}
+                      />
+                    ))}
+                  </div>
                 </div>
 
-                {/* Mobile Archive */}
-                {discoveries.length > 0 && (
-                  <div className="mt-6 md:mt-8 lg:hidden">
-                    <DiscoveryArchive discoveries={discoveries} />
+                {/* Objective */}
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                    Step 4 — Research Objective
+                  </h3>
+                  <div className="space-y-2">
+                    {objectives.map((o, i) => (
+                      <SelectionCard
+                        key={o.label}
+                        icon={o.icon}
+                        label={o.label}
+                        selected={objective === o.label}
+                        onClick={() => setObjective(o.label)}
+                        delay={i * 0.02 + 0.3}
+                      />
+                    ))}
                   </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </main>
+                </div>
+              </div>
 
-        {/* Footer */}
-        <footer className="px-4 py-3 flex items-center justify-center">
-          <p className="font-mono text-[8px] md:text-[9px] text-muted-foreground/50 tracking-wider">
-            ApeironAI Research Lab · Powered by Cherazen Research Systems
-          </p>
-        </footer>
-      </div>
+              {/* Run Button */}
+              <div className="flex justify-center mb-8">
+                <button
+                  onClick={handleRun}
+                  disabled={!canRun}
+                  className="btn-primary text-sm flex items-center gap-2"
+                >
+                  Run AI Exploration
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+
+              {/* Status + Feed */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <SystemStatus />
+                <GlobalFeed />
+              </div>
+
+              {/* Archive */}
+              {discoveries.length > 0 && (
+                <DiscoveryArchive discoveries={discoveries} />
+              )}
+            </motion.div>
+          )}
+
+          {phase === "reasoning" && (
+            <motion.div key="reasoning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center">
+              <ReasoningAnimation onComplete={handleReasoningComplete} />
+            </motion.div>
+          )}
+
+          {phase === "insight" && currentInsight && (
+            <motion.div key="insight" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-2xl mx-auto">
+              {/* Breakthrough */}
+              {isBreakthrough && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mb-5">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                    <Sparkles size={14} />
+                    Breakthrough Pattern — 2× Score Bonus!
+                  </span>
+                </motion.div>
+              )}
+
+              {/* Discovery label */}
+              <p className="text-xs font-semibold text-primary uppercase tracking-wider text-center mb-4">
+                Discovery Detected
+              </p>
+
+              {/* Insight Card */}
+              <div className="bg-background rounded-2xl border border-border shadow-lg p-6 md:p-8">
+                {/* Badges */}
+                <div className="flex items-center gap-2 mb-4 flex-wrap">
+                  <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${rarityBadge[currentInsight.rarity] || rarityBadge.common}`}>
+                    {getRarityLabel(currentInsight.rarity)} Discovery
+                  </span>
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${impactBadge[currentInsight.impact] || impactBadge.Low}`}>
+                    {currentInsight.impact}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground ml-auto">
+                    {currentInsight.confidence}% confidence · +{currentInsight.points} pts
+                  </span>
+                </div>
+
+                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-4 tracking-tight">
+                  {currentInsight.title}
+                </h3>
+
+                <div className="mb-4">
+                  <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-1.5">Hypothesis</p>
+                  <p className="text-sm text-foreground/80 leading-relaxed">{currentInsight.hypothesis}</p>
+                </div>
+
+                <div className="mb-5">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Research Insight</p>
+                  <p className="text-sm text-foreground/70 leading-relaxed">{currentInsight.insight}</p>
+                </div>
+
+                {/* Confidence bar */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-muted-foreground">Confidence</span>
+                    <span className="text-xs font-semibold text-foreground">{currentInsight.confidence}%</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-secondary">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${currentInsight.confidence}%` }}
+                      transition={{ duration: 1, delay: 0.3 }}
+                      className="h-full rounded-full bg-primary"
+                    />
+                  </div>
+                </div>
+
+                <p className="text-[10px] text-muted-foreground">
+                  Generated by ApeironAI Research Systems · Powered by Cherazen
+                </p>
+              </div>
+
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-3 mt-6 justify-center">
+                <button onClick={handleReset} className="btn-primary text-sm flex items-center justify-center gap-2">
+                  <RotateCcw size={14} />
+                  Run Another Exploration
+                </button>
+                <button
+                  onClick={() => setShowCollection(true)}
+                  className="px-5 py-3 rounded-xl text-sm font-medium bg-secondary text-foreground hover:bg-border transition-colors flex items-center justify-center gap-2"
+                >
+                  <BookOpen size={14} />
+                  Archive ({stats.collectedInsights.length}/48)
+                </button>
+                <a
+                  href="https://ai.cherazen.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-3 rounded-xl text-sm font-medium bg-secondary text-foreground hover:bg-border transition-colors flex items-center justify-center gap-2"
+                >
+                  Explore ApeironAI
+                  <ExternalLink size={14} />
+                </a>
+              </div>
+
+              {/* Mobile archive */}
+              {discoveries.length > 0 && (
+                <div className="mt-8">
+                  <DiscoveryArchive discoveries={discoveries} />
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-border py-4">
+        <p className="text-[10px] text-muted-foreground text-center">
+          ApeironAI Research Lab · Powered by Cherazen Research Systems
+        </p>
+      </footer>
     </div>
   );
 };
