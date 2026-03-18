@@ -12,15 +12,15 @@ const SystemStatus = () => {
   }, []);
 
   return (
-    <div className="card-elevated rounded-xl px-4 py-3 w-full">
+    <div className="card-surface px-4 py-3 w-full">
       <div className="flex items-center gap-2 mb-2">
-        <Activity size={12} className="text-primary" />
-        <span className="text-[10px] font-semibold tracking-wider uppercase text-muted-foreground">
+        <Activity size={12} className="text-destructive" />
+        <span className="eyebrow" style={{ fontSize: '10px', letterSpacing: '2px' }}>
           System Status
         </span>
-        <span className="ml-auto flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-          <span className="text-[10px] text-green-600 font-medium">Online</span>
+        <span className="ml-auto flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-success pulse-dot" />
+          <span className="text-[10px] text-success font-semibold font-mono">ONLINE</span>
         </span>
       </div>
       <div className="grid grid-cols-2 gap-2">
@@ -32,7 +32,7 @@ const SystemStatus = () => {
         ].map((item) => (
           <div key={item.label}>
             <p className="text-[10px] text-muted-foreground">{item.label}</p>
-            <p className="text-xs font-semibold text-foreground tabular-nums">{item.value}</p>
+            <p className="text-xs font-bold text-foreground font-mono tabular-nums">{item.value}</p>
           </div>
         ))}
       </div>

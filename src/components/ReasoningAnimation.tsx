@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Database, Network, Brain, Lightbulb, Sparkles, Check } from "lucide-react";
 
 const steps = [
-  { label: "Collecting Data", icon: Database },
-  { label: "Analyzing Knowledge Graph", icon: Network },
-  { label: "Running Reasoning Engine", icon: Brain },
-  { label: "Generating Hypothesis", icon: Lightbulb },
-  { label: "Classifying Discovery", icon: Sparkles },
+  { label: "Collecting Research Data", icon: Database },
+  { label: "Building Knowledge Graph", icon: Network },
+  { label: "AI Reasoning Engine Processing", icon: Brain },
+  { label: "Hypothesis Generation", icon: Lightbulb },
+  { label: "Discovery Classification", icon: Sparkles },
 ];
 
 interface ReasoningAnimationProps {
@@ -27,15 +27,19 @@ const ReasoningAnimation = ({ onComplete }: ReasoningAnimationProps) => {
         }
         return s + 1;
       });
-    }, 700);
+    }, 600);
     return () => clearInterval(interval);
   }, [onComplete]);
 
   return (
-    <div className="w-full max-w-md mx-auto py-8">
-      <h3 className="text-lg font-semibold text-foreground text-center mb-6">
-        AI Processing...
-      </h3>
+    <div className="w-full max-w-md mx-auto py-12">
+      <div className="text-center mb-8">
+        <p className="eyebrow mb-2">⚡ ANALYZING</p>
+        <h3 className="text-xl font-bold text-foreground">
+          AI Processing...
+        </h3>
+      </div>
+
       <div className="space-y-3">
         {steps.map((step, i) => {
           const Icon = step.icon;
@@ -47,10 +51,10 @@ const ReasoningAnimation = ({ onComplete }: ReasoningAnimationProps) => {
               key={step.label}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
+              transition={{ delay: i * 0.08 }}
               className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
-                isActive ? "bg-primary/10 border border-primary/30" :
-                isDone ? "bg-secondary" : "bg-secondary/50"
+                isActive ? "bg-primary/10 border border-primary/40" :
+                isDone ? "bg-secondary border border-border" : "bg-secondary/50 border border-transparent"
               }`}
             >
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
@@ -59,7 +63,7 @@ const ReasoningAnimation = ({ onComplete }: ReasoningAnimationProps) => {
                 {isDone ? (
                   <Check size={15} className="text-primary-foreground" />
                 ) : (
-                  <Icon size={15} className={isActive ? "text-primary" : "text-muted-foreground"} />
+                  <Icon size={15} className={isActive ? "text-destructive" : "text-muted-foreground"} />
                 )}
               </div>
               <span className={`text-sm font-medium ${
@@ -71,16 +75,18 @@ const ReasoningAnimation = ({ onComplete }: ReasoningAnimationProps) => {
                 <motion.div
                   animate={{ opacity: [0.3, 1, 0.3] }}
                   transition={{ repeat: Infinity, duration: 1 }}
-                  className="ml-auto w-2 h-2 rounded-full bg-primary"
+                  className="ml-auto w-2 h-2 rounded-full bg-destructive"
                 />
               )}
             </motion.div>
           );
         })}
       </div>
-      <div className="mt-6 h-1 rounded-full bg-secondary">
+
+      <div className="mt-8 h-[3px] rounded-full bg-secondary">
         <motion.div
-          className="h-full rounded-full bg-primary"
+          className="h-full rounded-full"
+          style={{ background: 'linear-gradient(90deg, #C0392B, #E74C3C)' }}
           initial={{ width: "0%" }}
           animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
           transition={{ duration: 0.5 }}
