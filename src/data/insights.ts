@@ -29,18 +29,24 @@ export interface PlayerStats {
 }
 
 export const RANKS = [
-  "Researcher",
+  "Novice Researcher",
+  "Lab Technician",
+  "Research Associate",
   "Senior Researcher",
-  "AI Architect",
-  "Knowledge Explorer",
-  "Infinity Scholar",
+  "Principal Investigator",
+  "Director of Discovery",
+  "Chief Science Officer",
+  "Apex Theorist",
 ];
 
 export function getRank(level: number): string {
-  if (level >= 20) return RANKS[4];
-  if (level >= 12) return RANKS[3];
-  if (level >= 7) return RANKS[2];
-  if (level >= 3) return RANKS[1];
+  if (level >= 100) return RANKS[7];
+  if (level >= 76) return RANKS[6];
+  if (level >= 51) return RANKS[5];
+  if (level >= 36) return RANKS[4];
+  if (level >= 21) return RANKS[3];
+  if (level >= 11) return RANKS[2];
+  if (level >= 6) return RANKS[1];
   return RANKS[0];
 }
 
@@ -186,11 +192,11 @@ export function getAllInsights(): InsightData[] {
 
 export function getRarityColor(rarity: string): string {
   switch (rarity) {
-    case "mythic": return "#00ffd5";
-    case "legendary": return "#ffd166";
-    case "epic": return "#FF4DA6";
-    case "rare": return "#7a5cff";
-    default: return "#4cc9ff";
+    case "mythic": return "#E74C3C";
+    case "legendary": return "#E67E22";
+    case "epic": return "#8E44AD";
+    case "rare": return "#2980B9";
+    default: return "#7A9BB5";
   }
 }
 
@@ -206,10 +212,10 @@ export function getRarityLabel(rarity: string): string {
 
 export function getImpactColor(impact: string): string {
   switch (impact) {
-    case "Paradigm Shift": return "#00ffd5";
-    case "Breakthrough": return "#ffd166";
-    case "High": return "#9f6bff";
-    case "Moderate": return "#4cc9ff";
-    default: return "#4cc9ff";
+    case "Paradigm Shift": return "#E74C3C";
+    case "Breakthrough": return "#E67E22";
+    case "High": return "#8E44AD";
+    case "Moderate": return "#2980B9";
+    default: return "#7A9BB5";
   }
 }
