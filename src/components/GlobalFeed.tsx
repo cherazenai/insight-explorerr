@@ -26,10 +26,10 @@ const GlobalFeed = () => {
   const item = feedTemplates[currentItem];
 
   return (
-    <div className="card-elevated rounded-xl px-4 py-3 w-full">
+    <div className="card-surface px-4 py-3 w-full">
       <div className="flex items-center gap-2 mb-1.5">
-        <Radio size={12} className="text-primary" />
-        <span className="text-[10px] font-semibold tracking-wider uppercase text-muted-foreground">
+        <Radio size={12} className="text-destructive" />
+        <span className="eyebrow" style={{ fontSize: '10px', letterSpacing: '2px' }}>
           Live Discovery Feed
         </span>
       </div>
@@ -43,9 +43,9 @@ const GlobalFeed = () => {
         >
           <p className="text-xs text-foreground/80">
             <span className="font-semibold text-foreground">{item.domain}:</span>{" "}
-            ApeironAI {item.text}
+            IntelliZ {item.text}
           </p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">
+          <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">
             Confidence: {item.confidence}%
           </p>
         </motion.div>

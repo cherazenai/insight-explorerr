@@ -10,11 +10,11 @@ interface ScorePopupProps {
 }
 
 const rarityBg: Record<string, string> = {
-  mythic: "bg-emerald-50 text-emerald-700",
-  legendary: "bg-amber-50 text-amber-700",
-  epic: "bg-pink-50 text-pink-700",
-  rare: "bg-violet-50 text-violet-700",
-  common: "bg-sky-50 text-sky-700",
+  mythic: "bg-destructive/20 text-destructive",
+  legendary: "bg-warning/20 text-warning",
+  epic: "bg-rarity-epic/20 text-rarity-epic",
+  rare: "bg-rarity-rare/20 text-rarity-rare",
+  common: "bg-rarity-common/20 text-rarity-common",
 };
 
 const ScorePopup = ({ points, insight, isNew, onDone }: ScorePopupProps) => {
@@ -33,10 +33,10 @@ const ScorePopup = ({ points, insight, isNew, onDone }: ScorePopupProps) => {
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="flex items-center justify-center gap-1.5 mb-2"
+            className="flex items-center justify-center gap-1.5 mb-3"
           >
-            <Sparkles size={14} className="text-primary" />
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${rarityBg[insight.rarity] || rarityBg.common}`}>
+            <Sparkles size={14} className="text-destructive" />
+            <span className={`text-xs font-bold px-3 py-1 rounded-full ${rarityBg[insight.rarity] || rarityBg.common}`}>
               New {getRarityLabel(insight.rarity)} Discovery
             </span>
           </motion.div>
@@ -45,11 +45,12 @@ const ScorePopup = ({ points, insight, isNew, onDone }: ScorePopupProps) => {
           initial={{ scale: 0.5 }}
           animate={{ scale: [0.5, 1.2, 1] }}
           transition={{ duration: 0.5, times: [0, 0.6, 1] }}
-          className="text-5xl font-bold text-primary"
+          className="text-6xl font-extrabold text-destructive"
+          style={{ textShadow: '0 0 30px hsl(6 78% 57% / 0.5)' }}
         >
           +{points}
         </motion.div>
-        <p className="text-xs text-muted-foreground mt-1 font-medium">Research Points</p>
+        <p className="text-xs text-muted-foreground mt-2 font-semibold uppercase tracking-widest">Research Points</p>
       </div>
     </motion.div>
   );

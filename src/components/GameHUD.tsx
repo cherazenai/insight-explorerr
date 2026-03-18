@@ -13,12 +13,12 @@ const GameHUD = ({ stats }: GameHUDProps) => {
     <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
       {/* Level */}
       <div className="flex items-center gap-1.5 bg-secondary rounded-lg px-2.5 py-1.5">
-        <Trophy size={13} className="text-primary" />
-        <span className="text-xs font-semibold text-foreground">Lvl {stats.level}</span>
+        <Trophy size={13} className="text-destructive" />
+        <span className="text-xs font-semibold text-foreground font-mono">Lvl {stats.level}</span>
         <div className="w-10 h-1 rounded-full bg-border">
           <motion.div
-            className="h-full rounded-full bg-primary"
-            style={{ width: `${xpPercent}%` }}
+            className="h-full rounded-full"
+            style={{ width: `${xpPercent}%`, background: 'linear-gradient(90deg, #C0392B, #E74C3C)' }}
             animate={{ width: `${xpPercent}%` }}
           />
         </div>
@@ -26,14 +26,14 @@ const GameHUD = ({ stats }: GameHUDProps) => {
 
       {/* Score */}
       <div className="flex items-center gap-1.5 bg-secondary rounded-lg px-2.5 py-1.5">
-        <Star size={13} className="text-primary" />
-        <span className="text-xs font-semibold tabular-nums">{stats.score.toLocaleString()}</span>
+        <Star size={13} className="text-destructive" />
+        <span className="text-xs font-semibold font-mono tabular-nums text-foreground">{stats.score.toLocaleString()}</span>
       </div>
 
       {/* Energy */}
       <div className="flex items-center gap-1.5 bg-secondary rounded-lg px-2.5 py-1.5">
         <Battery size={13} className="text-muted-foreground" />
-        <span className="text-xs tabular-nums text-muted-foreground">{stats.energy}/{stats.maxEnergy}</span>
+        <span className="text-xs font-mono tabular-nums text-muted-foreground">{stats.energy}/{stats.maxEnergy}</span>
       </div>
 
       {/* Streak */}
@@ -43,15 +43,15 @@ const GameHUD = ({ stats }: GameHUDProps) => {
           animate={{ scale: 1, opacity: 1 }}
           className="flex items-center gap-1 bg-primary/10 rounded-lg px-2.5 py-1.5"
         >
-          <Flame size={13} className="text-primary" />
-          <span className="text-xs font-semibold text-primary">×{stats.streak}</span>
+          <Flame size={13} className="text-destructive" />
+          <span className="text-xs font-bold text-destructive font-mono">×{stats.streak}</span>
         </motion.div>
       )}
 
       {/* Discoveries */}
       <div className="hidden sm:flex items-center gap-1.5 bg-secondary rounded-lg px-2.5 py-1.5">
         <Zap size={13} className="text-muted-foreground" />
-        <span className="text-xs tabular-nums text-muted-foreground">{stats.collectedInsights.length}/48</span>
+        <span className="text-xs font-mono tabular-nums text-muted-foreground">{stats.collectedInsights.length}/48</span>
       </div>
     </div>
   );
