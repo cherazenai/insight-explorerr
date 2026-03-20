@@ -1,43 +1,37 @@
-import { useState, useEffect } from "react";
-import { Activity } from "lucide-react";
+import { motion } from "framer-motion";
+import { Activity, Database, Cpu, Network } from "lucide-react";
 
-const SystemStatus = () => {
-  const [counter, setCounter] = useState(1284223);
+const items = [
+  { icon: Database, label: "Knowledge Nodes", value: "2.4M", color: "text-primary" },
+  { icon: Network, label: "Papers Indexed", value: "847K", color: "text-rarity-epic" },
+  { icon: Cpu, label: "Reasoning Engine", value: "Online", color: "text-success" },
+  { icon: Activity, label: "System Load", value: "12%", color: "text-muted-foreground" },
+];
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCounter((c) => c + Math.floor(Math.random() * 3) + 1);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="card-surface px-4 py-3 w-full">
-      <div className="flex items-center gap-2 mb-2">
-        <Activity size={12} className="text-destructive" />
-        <span className="eyebrow" style={{ fontSize: '10px', letterSpacing: '2px' }}>
-          System Status
-        </span>
-        <span className="ml-auto flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-success pulse-dot" />
-          <span className="text-[10px] text-success font-semibold font-mono">ONLINE</span>
-        </span>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        {[
-          { label: "Discoveries", value: counter.toLocaleString() },
-          { label: "Papers Indexed", value: "12.4M" },
-          { label: "Graph Nodes", value: "2.4M" },
-          { label: "Models Active", value: "7" },
-        ].map((item) => (
-          <div key={item.label}>
-            <p className="text-[10px] text-muted-foreground">{item.label}</p>
-            <p className="text-xs font-bold text-foreground font-mono tabular-nums">{item.value}</p>
-          </div>
-        ))}
-      </div>
+const SystemStatus = () => (
+  <div className="glass-card p-5">
+    <div className="flex items-center gap-2 mb-4">
+      <span className="w-1.5 h-1.5 rounded-full bg-success pulse-dot" />
+      <span className="eyebrow" style={{ fontSize: '10px' }}>System Status</span>
     </div>
-  );
-};
+    <div className="grid grid-cols-2 gap-3">
+      {items.map((item, i) => (
+        <motion.div
+          key={item.label}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.05 }}
+          className="flex items-center gap-2.5"
+        >
+          <item.icon size={14} className={item.color} />
+          <div>
+            <p className="text-[10px] text-muted-foreground">{item.label}</p>
+            <p className={`text-xs font-semibold font-mono ${item.color}`}>{item.value}</p>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  </div>
+);
 
 export default SystemStatus;
