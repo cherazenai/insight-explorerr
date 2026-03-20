@@ -13,8 +13,8 @@ const rarityBg: Record<string, string> = {
   mythic: "bg-destructive/20 text-destructive",
   legendary: "bg-warning/20 text-warning",
   epic: "bg-rarity-epic/20 text-rarity-epic",
-  rare: "bg-rarity-rare/20 text-rarity-rare",
-  common: "bg-rarity-common/20 text-rarity-common",
+  rare: "bg-primary/20 text-primary",
+  common: "bg-muted/30 text-muted-foreground",
 };
 
 const ScorePopup = ({ points, insight, isNew, onDone }: ScorePopupProps) => {
@@ -33,9 +33,9 @@ const ScorePopup = ({ points, insight, isNew, onDone }: ScorePopupProps) => {
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="flex items-center justify-center gap-1.5 mb-3"
+            className="flex items-center justify-center gap-1.5 mb-4"
           >
-            <Sparkles size={14} className="text-destructive" />
+            <Sparkles size={14} className="text-primary" />
             <span className={`text-xs font-bold px-3 py-1 rounded-full ${rarityBg[insight.rarity] || rarityBg.common}`}>
               New {getRarityLabel(insight.rarity)} Discovery
             </span>
@@ -45,12 +45,12 @@ const ScorePopup = ({ points, insight, isNew, onDone }: ScorePopupProps) => {
           initial={{ scale: 0.5 }}
           animate={{ scale: [0.5, 1.2, 1] }}
           transition={{ duration: 0.5, times: [0, 0.6, 1] }}
-          className="text-6xl font-extrabold text-destructive"
-          style={{ textShadow: '0 0 30px hsl(6 78% 57% / 0.5)' }}
+          className="font-display text-7xl font-extrabold text-primary"
+          style={{ textShadow: '0 0 40px rgba(79,142,247,0.4)' }}
         >
           +{points}
         </motion.div>
-        <p className="text-xs text-muted-foreground mt-2 font-semibold uppercase tracking-widest">Research Points</p>
+        <p className="text-xs text-muted-foreground mt-3 font-semibold uppercase tracking-widest font-mono">Research Points</p>
       </div>
     </motion.div>
   );
