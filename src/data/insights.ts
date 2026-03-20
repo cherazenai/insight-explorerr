@@ -29,24 +29,24 @@ export interface PlayerStats {
 }
 
 export const RANKS = [
-  "Novice Researcher",
-  "Lab Technician",
-  "Research Associate",
-  "Senior Researcher",
-  "Principal Investigator",
-  "Director of Discovery",
-  "Chief Science Officer",
-  "Apex Theorist",
+  "Apprentice Researcher",
+  "Field Analyst",
+  "Senior Investigator",
+  "Lead Scientist",
+  "Principal Researcher",
+  "Research Director",
+  "Grand Theorist",
+  "Reality Architect",
 ];
 
 export function getRank(level: number): string {
-  if (level >= 100) return RANKS[7];
-  if (level >= 76) return RANKS[6];
-  if (level >= 51) return RANKS[5];
-  if (level >= 36) return RANKS[4];
-  if (level >= 21) return RANKS[3];
-  if (level >= 11) return RANKS[2];
-  if (level >= 6) return RANKS[1];
+  if (level >= 21) return RANKS[7];
+  if (level >= 16) return RANKS[6];
+  if (level >= 11) return RANKS[5];
+  if (level >= 9) return RANKS[4];
+  if (level >= 7) return RANKS[3];
+  if (level >= 5) return RANKS[2];
+  if (level >= 3) return RANKS[1];
   return RANKS[0];
 }
 
@@ -192,11 +192,11 @@ export function getAllInsights(): InsightData[] {
 
 export function getRarityColor(rarity: string): string {
   switch (rarity) {
-    case "mythic": return "#E74C3C";
-    case "legendary": return "#E67E22";
-    case "epic": return "#8E44AD";
-    case "rare": return "#2980B9";
-    default: return "#7A9BB5";
+    case "mythic": return "#EF4444";
+    case "legendary": return "#F59E0B";
+    case "epic": return "#A78BFA";
+    case "rare": return "#4F8EF7";
+    default: return "#8B93A7";
   }
 }
 
@@ -212,10 +212,10 @@ export function getRarityLabel(rarity: string): string {
 
 export function getImpactColor(impact: string): string {
   switch (impact) {
-    case "Paradigm Shift": return "#E74C3C";
-    case "Breakthrough": return "#E67E22";
-    case "High": return "#8E44AD";
-    case "Moderate": return "#2980B9";
-    default: return "#7A9BB5";
+    case "Paradigm Shift": return "#EF4444";
+    case "Breakthrough": return "#F59E0B";
+    case "High": return "#A78BFA";
+    case "Moderate": return "#4F8EF7";
+    default: return "#8B93A7";
   }
 }
